@@ -37,11 +37,13 @@ def test_parse_replace_hook():
 
 def test_parse_server_spec():
     tutils.raises("Invalid server specification", cmdline.parse_server_spec, "")
-    assert cmdline.parse_server_spec("http://foo.com:88") == [False, False, "foo.com", 88]
-    assert cmdline.parse_server_spec("http://foo.com") == [False, False, "foo.com", 80]
-    assert cmdline.parse_server_spec("https://foo.com") == [True, True, "foo.com", 443]
-    assert cmdline.parse_server_spec_special("https2http://foo.com") == [True, False, "foo.com", 80]
-    assert cmdline.parse_server_spec_special("http2https://foo.com") == [False, True, "foo.com", 443]
+    def t(upstream_info):
+        return list(upstream_info.server_address) + [upstream_info.server_ssl, upstream_info.client_ssl]
+    assert t(cmdline.parse_server_spec("http://foo.com:88")) == ["foo.com", 88, False, False]
+    assert t(cmdline.parse_server_spec("http://foo.com")) == ["foo.com", 80, False, False]
+    assert t(cmdline.parse_server_spec("https://foo.com")) == ["foo.com", 443, True, True]
+    assert t(cmdline.parse_server_spec_special("https2http://foo.com")) == ["foo.com", 80, False, True]
+    assert t(cmdline.parse_server_spec_special("http2https://foo.com")) == ["foo.com", 443, True, False]
     tutils.raises("Invalid server specification", cmdline.parse_server_spec, "foo.com")
     tutils.raises("Invalid server specification", cmdline.parse_server_spec, "http://")
 

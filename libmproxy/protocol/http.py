@@ -1481,7 +1481,7 @@ class RequestReplayThread(threading.Thread):
                 if self.config.mode == "upstream":
                     server_address = self.config.mode.get_upstream_server(
                         self.flow.client_conn
-                    )[2:]
+                    ).server_address
                     server = ServerConnection(server_address)
                     server.connect()
                     if r.scheme == "https":

@@ -72,10 +72,10 @@ class ConnectionHandler:
             conn_kwargs = dict()
             upstream_info = self.config.mode.get_upstream_server(self.client_conn)
             if upstream_info:
-                self.set_server_address(upstream_info[2:])
-                client_ssl, server_ssl = upstream_info[:2]
+                self.set_server_address(upstream_info.server_address)
+                client_ssl, server_ssl = upstream_info.client_ssl, upstream_info.server_ssl
                 if self.config.check_ignore(self.server_conn.address):
-                    self.log("Ignore host: %s:%s" % self.server_conn.address(), "info")
+                    self.log("Ignore host: " + repr(self.server_conn.address), "info")
                     self.conntype = "tcp"
                     conn_kwargs["log"] = False
                     client_ssl, server_ssl = False, False
@@ -92,7 +92,7 @@ class ConnectionHandler:
                     self.establish_ssl(client=client_ssl, server=server_ssl)
 
                 if self.config.check_tcp(self.server_conn.address):
-                    self.log("Generic TCP mode for host: %s:%s" % self.server_conn.address(), "info")
+                    self.log("Generic TCP mode for host: " + repr(self.server_conn.address), "info")
                     self.conntype = "tcp"
 
             # Delegate handling to the protocol handler
@@ -112,7 +112,7 @@ class ConnectionHandler:
             print >> sys.stderr, "Please lodge a bug report at: https://github.com/mitmproxy/mitmproxy"
         finally:
             # Make sure that we close the server connection in any case.
-            # The client connection is closed by the ProxyServer and does not have be handled here.
+            # The client connection is closed by the ProxyServer and does not have to be handled here.
             self.del_server_connection()
 
     def del_server_connection(self):
@@ -122,8 +122,7 @@ class ConnectionHandler:
         if self.server_conn and self.server_conn.connection:
             self.server_conn.finish()
             self.server_conn.close()
-            self.log("serverdisconnect", "debug", ["%s:%s" % (self.server_conn.address.host,
-                                                              self.server_conn.address.port)])
+            self.log("serverdisconnect", "debug", [repr(self.server_conn.address)])
             self.channel.tell("serverdisconnect", self)
         self.server_conn = None
 
@@ -155,7 +154,7 @@ class ConnectionHandler:
         """
         if self.server_conn.connection:
             return
-        self.log("serverconnect", "debug", ["%s:%s" % self.server_conn.address()[:2]])
+        self.log("serverconnect", "debug", [repr(self.server_conn.address)])
         if ask:
             self.channel.ask("serverconnect", self)
         try:

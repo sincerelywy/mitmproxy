@@ -4,7 +4,7 @@ import re
 import configargparse
 from netlib import http
 from . import filt, utils, version
-from .proxy import config
+from .proxy import config, UpstreamInfo
 
 APP_HOST = "mitm.it"
 APP_PORT = 80
@@ -105,13 +105,12 @@ def parse_server_spec(url):
         raise configargparse.ArgumentTypeError(
             "Invalid server specification: %s" % url
         )
-
-    if p[0].lower() == "https":
-        ssl = [True, True]
-    else:
-        ssl = [False, False]
-
-    return ssl + list(p[1:3])
+    ssl = p[0].lower() == "https"
+    return UpstreamInfo(
+        server_address=tuple(p[1:3]),
+        server_ssl = ssl,
+        client_ssl = ssl
+    )
 
 
 def parse_server_spec_special(url):
@@ -119,13 +118,14 @@ def parse_server_spec_special(url):
     Provides additional support for http2https and https2http schemes.
     """
     normalized_url = re.sub("^https?2", "", url)
-    ret = parse_server_spec(normalized_url)
-    if url.lower().startswith("https2http"):
-        ret[0] = True
-    elif url.lower().startswith("http2https"):
-        ret[0] = False
-    return ret
+    spec = parse_server_spec(normalized_url)
 
+    if url.lower().startswith("https2http"):
+        spec.client_ssl = True
+    elif url.lower().startswith("http2https"):
+        spec.client_ssl = False
+
+    return spec
 
 
 def get_common_options(options):

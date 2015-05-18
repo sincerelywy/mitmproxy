@@ -346,7 +346,7 @@ class TestHttps2Http(tservers.ReverseProxTest):
     @classmethod
     def get_proxy_config(cls):
         d = super(TestHttps2Http, cls).get_proxy_config()
-        d["upstream_server"][0] = True
+        d["upstream_server"].client_ssl = True
         return d
 
     def pathoc(self, ssl, sni=None):

@@ -1,6 +1,14 @@
 from __future__ import absolute_import
 from netlib import socks
 
+
+class UpstreamInfo(object):
+    def __init__(self, server_address, server_ssl, client_ssl):
+        self.server_address = server_address
+        self.server_ssl = server_ssl
+        self.client_ssl = client_ssl
+
+
 class ProxyError(Exception):
     def __init__(self, code, message, headers=None):
         super(ProxyError, self).__init__(message)
@@ -68,7 +76,7 @@ class TransparentProxyMode(ProxyMode):
             ssl = True
         else:
             ssl = False
-        return [ssl, ssl] + list(dst)
+        return UpstreamInfo(server_address=dst, server_ssl=ssl, client_ssl=ssl)
 
 
 class Socks5ProxyMode(ProxyMode):
@@ -129,7 +137,8 @@ class Socks5ProxyMode(ProxyMode):
             client_conn.wfile.flush()
 
             ssl = bool(connect_request.addr.port in self.sslports)
-            return ssl, ssl, connect_request.addr.host, connect_request.addr.port
+            server_address = (connect_request.addr.host, connect_request.addr.port)
+            return UpstreamInfo(server_address=server_address, server_ssl=ssl, client_ssl=ssl)
 
         except socks.SocksError as e:
             msg = socks.Message(5, e.code, socks.ATYP.DOMAINNAME, repr(e))

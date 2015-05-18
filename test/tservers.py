@@ -6,7 +6,7 @@ import mock
 
 from libmproxy.proxy.config import ProxyConfig
 from libmproxy.proxy.server import ProxyServer
-from libmproxy.proxy.primitives import TransparentProxyMode
+from libmproxy.proxy.primitives import TransparentProxyMode, UpstreamInfo
 import libpathod.test, libpathod.pathoc
 from libmproxy import flow, controller
 from libmproxy.cmdline import APP_HOST, APP_PORT
@@ -224,12 +224,11 @@ class ReverseProxTest(ProxTestBase):
     @classmethod
     def get_proxy_config(cls):
         d = ProxTestBase.get_proxy_config()
-        d["upstream_server"] = [
+        d["upstream_server"] = UpstreamInfo(
+            ("127.0.0.1", cls.server.port),
             True if cls.ssl else False,
-            True if cls.ssl else False,
-            "127.0.0.1",
-            cls.server.port
-        ]
+            True if cls.ssl else False
+        )
         d["mode"] = "reverse"
         return d
 
@@ -299,7 +298,7 @@ class ChainProxTest(ProxTestBase):
         if cls.chain:  # First proxy is in normal mode.
             d.update(
                 mode="upstream",
-                upstream_server=(False, False, "127.0.0.1", cls.chain[0].port)
+                upstream_server=UpstreamInfo(("127.0.0.1", cls.chain[0].port), False, False)
             )
         return d
 
