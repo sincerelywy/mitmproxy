@@ -4,7 +4,7 @@ import sys
 import urwid
 from netlib import odict
 from . import common, grideditor, contentview, signals, searchable, tabs
-from . import flowdetailview
+from . import flowdetailview, parseurl # My Change
 from .. import utils, controller
 from ..protocol.http import HTTPRequest, HTTPResponse, CONTENT_MISSING, decoded
 
@@ -124,6 +124,7 @@ class FlowView(tabs.Tabs):
         self.master, self.state, self.flow = master, state, flow
         tabs.Tabs.__init__(self,
                            [
+                               (self.tab_urlparse, self.view_urlparse), # My Change
                                (self.tab_request, self.view_request),
                                (self.tab_response, self.view_response),
                                (self.tab_details, self.view_details),
@@ -157,6 +158,14 @@ class FlowView(tabs.Tabs):
 
     def view_details(self):
         return flowdetailview.flowdetails(self.state, self.flow)
+
+    # My Change
+    def tab_urlparse(self):
+        return "URL Parse"
+
+    def view_urlparse(self):
+        return parseurl.parseurl(self.state, self.flow)
+    # End Mychange
 
     def sig_flow_change(self, sender, flow):
         if flow == self.flow:
