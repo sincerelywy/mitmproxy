@@ -47,7 +47,10 @@ def parseurl(state, flow):
 	text.append(urwid.Text([("head", "utm_campaign:".upper())]))
 	parts = []
 	utm_params = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
-	utm_campaign = ''.join(query_raw['utm_campaign']) # list to string
+	if query_raw.has_key('utm_campaign'):
+		utm_campaign = ''.join(query_raw['utm_campaign']) # list to string
+	else:
+		utm_campaign = ''
 	for param in utm_params:
 		m = re.match(r'.*' + param + '([^A-Z]+)', utm_campaign)
 		if m:
