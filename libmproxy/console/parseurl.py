@@ -59,6 +59,7 @@ def parseurl(state, flow):
 
 	# parse stid and ctpoi
 	config_parse_url = 'http://config.mobile.meituan.com/api/v1/strategy/detail/'
+	parts = []
 	m = re.match(r'.*' + 'C([^A-Z]+)', utm_campaign)
 	if m and cmp(m.group(1), '0') != 0:
 		text.append(urwid.Text([("head", "STID:")]))
@@ -69,9 +70,10 @@ def parseurl(state, flow):
 			# 本来想使用函数格式化Json，但是格式化后还厚很多行，而且要输出中文还得转化成字符串，所以直接输出字符串
 			[stid.group(1) ,response.read()]
 		]
-		text.extend(common.format_keyvals(parts, key="key", val="text", indent=4))
+	text.extend(common.format_keyvals(parts, key="key", val="text", indent=4))
 
 	m = re.match(r'.*' + 'E([^A-Z]+)', utm_campaign)
+	parts = []
 	if m and cmp(m.group(1), '0') != 0:
 		text.append(urwid.Text([("head", "CT_POI:")]))
 		ct_poi = re.match(r'(\d+)', m.group(1))
@@ -80,7 +82,7 @@ def parseurl(state, flow):
 			#[ct_poi.group(1) ,utils.pretty_json(response.read()).decode('unicode_escape')]
 			[ct_poi.group(1) ,response.read()]
 		]
-		text.extend(common.format_keyvals(parts, key="key", val="text", indent=4))
+	text.extend(common.format_keyvals(parts, key="key", val="text", indent=4))
 
 
 	return searchable.Searchable(state, text)
